@@ -31,5 +31,5 @@ for i in file.readlines():
         make_symbol_table(symbol_table,i)
     
 file.close()
-print(instructions[0])
+
 print(symbol_table)
