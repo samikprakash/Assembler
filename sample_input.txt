@@ -1,4 +1,9 @@
-
+CHANGE  MACRO P1 , P2
+        MOV EAX P1
+        MOV EBX P2
+        MOV P2 EAX
+        MOV P1 EBX
+        ENDM
 CLA
 INP 157
 INP 158
@@ -6,9 +11,14 @@ LAC 157
 SUB 158
 BRN L1
 DSP 157
+
+CHANGE P , Q
+
 CLA
 BRZ L2
 L1: DSP 158
 CLA
 BRZ L2
 L2: STP
+
+CHANGE R , S
