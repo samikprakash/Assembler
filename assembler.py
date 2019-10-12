@@ -1,5 +1,6 @@
 
-
+def decimalToBinary(n): 
+    return bin(n).replace("0b","") 
 
 
 
@@ -62,12 +63,13 @@ def literal_to_address(literal_table,ilc):
 
 
 def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
-    file = open("sample_input.txt","r")
+    file = open("sample_input_new.txt","r")
     for i in file.readlines():
         # print(i)
         if i!='\n':
+            # i=i.replace(":",'')
             temp_instruction = i.split()
-            print(temp_instruction)
+            # print(temp_instruction)
             
             make_symbol_table(symbol_table,i,instruction_location_counter) #added labels
 
@@ -84,6 +86,57 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
     file.close()
     return
 
+def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
+    file=open("sample_input_new.txt","r")
+    output_file=open("output.txt","w")
+    for i in file.readlines():
+        if i!='\n':
+            i=i.strip('\n')
+            curr_instruction=i.split(" ")
+            curr_instruction=(list(filter(lambda a: a != '', curr_instruction)))
+            # print(curr_instruction)
+            if curr_instruction[0]=="END" or curr_instruction[0]=="START":      #checking for end keyword
+                continue
+            if curr_instruction[0] not in symbol_table:     
+                curr_opcode=curr_instruction[0]
+                # print(curr_opcode)
+                curr_opcode_binary=opcode_table[curr_opcode]
+                if len(curr_instruction)!=1:                #for commands like CLA etc.
+
+                    curr_symbol=curr_instruction[1]
+                    if curr_symbol not in symbol_table:
+                        curr_symbol=curr_symbol+":"
+                    curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
+                    output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+                    output_file.write('\n')
+                else:
+                    output_file.write(curr_opcode_binary+" ")
+                    output_file.write('\n')
+            else:
+                curr_instruction.pop(0)
+                curr_opcode=curr_instruction[0]
+                # print(curr_opcode)
+                curr_opcode_binary=opcode_table[curr_opcode]
+                if len(curr_instruction)!=1:                #for commands like CLA etc.
+
+                    curr_symbol=curr_instruction[1]
+                    if curr_symbol not in symbol_table:
+                        curr_symbol=curr_symbol+":"
+                    curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
+                    output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+                    output_file.write('\n')
+                else:
+                    output_file.write(curr_opcode_binary+" ")
+                    output_file.write('\n')
+
+
+    return
+
+
+
+    
+
+
 # mapping instructions to the corresponding opcode :-
 opcode_table = {"CLA":"0000","LAC":"0001","SAC":"0010","ADD":"0011","SUB":"0100",
 "BRZ":"0101","BRN":"0110","BRP":"0111","INP":"1000","DSP":"1001","MUL":"1010","DIV":"1011","STP":"1100"} 
@@ -93,7 +146,11 @@ symbol_table = {}
 literal_table = {}
 instruction_location_counter = 0
 
-first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
 
+
+first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
 print(literal_table)
 print(symbol_table)
+second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
+
+
