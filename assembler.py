@@ -74,8 +74,10 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
     # print(len(file.readlines()))
     line_number = 0
     for i in file.readlines():
-        # print(i)
 
+        # print(i)
+        if "#" in i:        #for handling comments
+            continue
         if i!='\n':
             # i=i.replace(":",'')
             temp_instruction = i.split()
@@ -111,6 +113,9 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
     output_file=open("output.txt","w")
     line_number = 0
     for i in file.readlines():
+        if "#" in i:            #for handling comments
+            continue
+
         if i!='\n':
         	# line_number += 1
             i = i.strip('\n')
