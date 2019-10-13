@@ -25,13 +25,16 @@ def make_symbol_table(symbol_table,instruction,ilc):  #takes symbol out of instr
         symbol_table[instruction[:instruction.find(":")+1]] = ilc
     return
 
-def add_variable(symbol_table,instruction,ilc,opcode_table): #adds variables to the variable table, here instruction parameter is a list
+def add_variable(symbol_table,instruction,ilc,opcode_table,variable_table): #adds variables to the variable table, here instruction parameter is a list
 
     if len(instruction) > 1:
         for x in instruction:
             if x not in opcode_table and x.isalpha() and x != "START" and x != "END":
                 symbol_table[x] = "na"
+                variable_table.add(x)
     return
+
+
 
 def address_to_variable(symbol_table,ilc): #gives address to the variables in the variable table
     jump = 0
@@ -70,13 +73,33 @@ def literal_to_address(literal_table,ilc):
 
 
 def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
+    variables = set() #to see which are variables
     file = open("sample_input_new.txt","r")
-    # print(len(file.readlines()))
+    # print((file.read()))
+    file1 = open("sample_input_new.txt","r")
+    a = file1.read()
+    # print(a.find("END"))
+    if a.find("END") == -1:
+        print("END statement is missing. Please add end statement.")
+        exit()
+    # print(file1.read().find("END"))
+    if a.find("START") == -1:
+        print("START statement is missing. Please add end statement.")
+        exit()
+    if a.count("END") >1:
+        print("More than 1 END statements .There should only be one occurence of END statement. Please remove additional END statements")
+        exit()
+    if a.count("START") >1:
+        print("More than 1 START statements .There should only be one occurence of START statement. Please remove additional START statements")
+        exit()
+
+    file1.close()
+
+
     line_number = 0
     for i in file.readlines():
-
         # print(i)
-        if "#" in i:        #for handling comments
+        if i.find("#") != -1:        #for handling comments
             continue
         if i!='\n':
             # i=i.replace(":",'')
@@ -95,13 +118,13 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 
             make_symbol_table(symbol_table,i,instruction_location_counter) #added labels
 
-            add_variable(symbol_table,temp_instruction,instruction_location_counter,opcode_table) #added variables
+            add_variable(symbol_table,temp_instruction,instruction_location_counter,opcode_table,variables) #added variables
 
             add_literal(literal_table,i)
             instruction_location_counter+=12
     # print(instruction_location_counter)
     instruction_location_counter += 16*address_to_variable(symbol_table,instruction_location_counter)
-
+    # print(variables)
     # print(instruction_location_counter)
     literal_to_address(literal_table,instruction_location_counter)
     instruction_location_counter += 12*len(literal_table)
@@ -113,11 +136,10 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
     output_file=open("output.txt","w")
     line_number = 0
     for i in file.readlines():
-        if "#" in i:            #for handling comments
-            continue
-
         if i!='\n':
         	# line_number += 1
+            if i.find("#") != -1:        #for handling comments
+                continue
             i = i.strip('\n')
             line_number += 1
             curr_instruction=i.split(" ")
