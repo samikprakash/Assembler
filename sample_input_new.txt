@@ -13,4 +13,3 @@ L1: DSP B
     BRZ L2
 L2: STP
 END
-

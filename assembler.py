@@ -1,10 +1,17 @@
 
-def decimalToBinary(n): 
-    return bin(n).replace("0b","") 
+
+def decimalToBinary(n):
+    return bin(n).replace("0b","")
 
 
-
-
+#errors are defined below
+def missing_end(instruction):
+	pass
+def invalid_opcode(opcode,opcode_table,line_number):
+	if(opcode not in opcode_table):
+		print("Error on line " + str(line_number)+ ". Invalid opcode " + opcode+ ". Please enter a valid opcode. ")
+		exit()
+	return
 
 def label_exists(instruction):   #checks if instruction line contains symbol or not, instruction parameter is a string, to check if label exists
     temp = instruction.replace(" ","")
@@ -17,12 +24,12 @@ def make_symbol_table(symbol_table,instruction,ilc):  #takes symbol out of instr
     if(label_exists(instruction)):
         symbol_table[instruction[:instruction.find(":")+1]] = ilc
     return
-    
+
 def add_variable(symbol_table,instruction,ilc,opcode_table): #adds variables to the variable table, here instruction parameter is a list
-    
+
     if len(instruction) > 1:
         for x in instruction:
-            if x not in opcode_table and x.isalpha():
+            if x not in opcode_table and x.isalpha() and x != "START" and x != "END":
                 symbol_table[x] = "na"
     return
 
@@ -30,11 +37,11 @@ def address_to_variable(symbol_table,ilc): #gives address to the variables in th
     jump = 0
     for x in symbol_table:
         if symbol_table[x] == "na":
-            symbol_table[x] = ilc + 16 #word size is 16 bits 
+            symbol_table[x] = ilc + 16 #word size is 16 bits
             ilc = ilc+16
             jump += 1
     return jump
- 
+
 def add_literal(literal_table,instruction):  #instruction parameter here is string
     temp = instruction.replace(" ","")
     index = temp.find("=")
@@ -64,23 +71,36 @@ def literal_to_address(literal_table,ilc):
 
 def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
     file = open("sample_input_new.txt","r")
+    # print(len(file.readlines()))
+    line_number = 0
     for i in file.readlines():
         # print(i)
+
         if i!='\n':
             # i=i.replace(":",'')
             temp_instruction = i.split()
             # print(temp_instruction)
-            
+            line_number += 1
+            # print(line_number)
+            if len(temp_instruction) >2 :
+                if(temp_instruction[0].find(":") != -1):
+                    # print(temp_instruction[0])
+                    invalid_opcode(temp_instruction[1],opcode_table,line_number)
+
+            if len(temp_instruction) == 2 and temp_instruction[0] != "START" and temp_instruction[0].find(":") == -1:
+                invalid_opcode(temp_instruction[0],opcode_table,line_number)
+
+
             make_symbol_table(symbol_table,i,instruction_location_counter) #added labels
 
             add_variable(symbol_table,temp_instruction,instruction_location_counter,opcode_table) #added variables
 
             add_literal(literal_table,i)
-            instruction_location_counter+=12 
-    print(instruction_location_counter)   
+            instruction_location_counter+=12
+    # print(instruction_location_counter)
     instruction_location_counter += 16*address_to_variable(symbol_table,instruction_location_counter)
-    
-    print(instruction_location_counter)
+
+    # print(instruction_location_counter)
     literal_to_address(literal_table,instruction_location_counter)
     instruction_location_counter += 12*len(literal_table)
     file.close()
@@ -89,18 +109,24 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
     file=open("sample_input_new.txt","r")
     output_file=open("output.txt","w")
+    line_number = 0
     for i in file.readlines():
         if i!='\n':
-            i=i.strip('\n')
+        	# line_number += 1
+            i = i.strip('\n')
+            line_number += 1
             curr_instruction=i.split(" ")
             curr_instruction=(list(filter(lambda a: a != '', curr_instruction)))
             # print(curr_instruction)
             if curr_instruction[0]=="END" or curr_instruction[0]=="START":      #checking for end keyword
                 continue
-            if curr_instruction[0] not in symbol_table:     
+            if curr_instruction[0] not in symbol_table:
                 curr_opcode=curr_instruction[0]
                 # print(curr_opcode)
+                # invalid_opcode(curr_opcode,opcode_table,line_number )
                 curr_opcode_binary=opcode_table[curr_opcode]
+                #check for valid opcode
+
                 if len(curr_instruction)!=1:                #for commands like CLA etc.
 
                     curr_symbol=curr_instruction[1]
@@ -115,6 +141,8 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
             else:
                 curr_instruction.pop(0)
                 curr_opcode=curr_instruction[0]
+
+
                 # print(curr_opcode)
                 curr_opcode_binary=opcode_table[curr_opcode]
                 if len(curr_instruction)!=1:                #for commands like CLA etc.
@@ -134,14 +162,14 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
 
 
 
-    
+
 
 
 # mapping instructions to the corresponding opcode :-
 opcode_table = {"CLA":"0000","LAC":"0001","SAC":"0010","ADD":"0011","SUB":"0100",
-"BRZ":"0101","BRN":"0110","BRP":"0111","INP":"1000","DSP":"1001","MUL":"1010","DIV":"1011","STP":"1100"} 
+"BRZ":"0101","BRN":"0110","BRP":"0111","INP":"1000","DSP":"1001","MUL":"1010","DIV":"1011","STP":"1100"}
 
-symbol_table = {} 
+symbol_table = {}
 
 literal_table = {}
 instruction_location_counter = 0
@@ -152,5 +180,3 @@ first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
 print(literal_table)
 print(symbol_table)
 second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
-
-
