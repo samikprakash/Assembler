@@ -5,8 +5,32 @@ def decimalToBinary(n):
 
 
 #errors are defined below
-def missing_end(instruction):
-	pass
+def argument_errors(instruction,line_number):
+    opcodes_onearg = ["LAC","SAC","ADD","SUB",
+    "BRZ","BRN","BRP","INP","DSP","MUL","DIV"]
+    opcodes_noarg = ["CLA","STP"]
+    if instruction[0].find(":")==-1 and  instruction[0] != "START" and  instruction[0] != "END":
+        if instruction[0] in opcodes_onearg and len(instruction)>2:
+            print("Error. Too many argruments for "+ instruction[0]+ " on line "+str(line_number))
+            exit()
+        if instruction[0] in opcodes_onearg and len(instruction)<2:
+            print("Error. Argrument required for "+ instruction[0]+ " on line "+str(line_number))
+            exit()
+        if instruction[0] in opcodes_noarg and len(instruction)>1:
+            print("Error. No argruments required for "+ instruction[0]+ " on line "+str(line_number))
+            exit()
+    if instruction[0].find(":")!=-1 and  instruction[1] != "START" and  instruction[1] != "END":
+        if instruction[1] in opcodes_onearg and len(instruction)>3:
+            print("Error. Too many argruments for "+ instruction[1]+ " on line "+str(line_number))
+            exit()
+        if instruction[1] in opcodes_onearg and len(instruction)<3:
+            print("Error. Argrument required for "+ instruction[1]+ " on line "+str(line_number))
+            exit()
+        if instruction[1] in opcodes_noarg and len(instruction)>2:
+            print("Error. No argruments required for "+ instruction[1]+ " on line "+str(line_number))
+            exit()
+
+    return
 def invalid_opcode(opcode,opcode_table,line_number):
 	if(opcode not in opcode_table):
 		print("Error on line " + str(line_number)+ ". Invalid opcode " + opcode+ ". Please enter a valid opcode. ")
@@ -76,6 +100,7 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
     variables = set() #to see which are variables
     file = open("sample_input_new.txt","r")
     # print((file.read()))
+    #errors related to start and end statements :-
     file1 = open("sample_input_new.txt","r")
     a = file1.read()
     # print(a.find("END"))
@@ -89,6 +114,10 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
     if a.count("END") >1:
         print("More than 1 END statements .There should only be one occurence of END statement. Please remove additional END statements")
         exit()
+    if a.find("START") != 0:
+        print("Illegal START statement in the middle of the program. Please remove.")
+        exit()
+
     if a.count("START") >1:
         print("More than 1 START statements .There should only be one occurence of START statement. Please remove additional START statements")
         exit()
