@@ -193,41 +193,60 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
             if curr_instruction[0]=="END" or curr_instruction[0]=="START":      #checking for end keyword
                 continue
             if curr_instruction[0] not in symbol_table:
-                curr_opcode=curr_instruction[0]
-                # print(curr_opcode)
-                # invalid_opcode(curr_opcode,opcode_table,line_number )
-                curr_opcode_binary=opcode_table[curr_opcode]
-                #check for valid opcode
+		curr_opcode=curr_instruction[0]
+		# print(curr_opcode)
+		# invalid_opcode(curr_opcode,opcode_table,line_number )
+		curr_opcode_binary=opcode_table[curr_opcode]
+		#check for valid opcode
 
-                if len(curr_instruction)!=1:                #for commands like CLA etc.
+		if len(curr_instruction)!=1:                #for commands like CLA etc.
 
-                    curr_symbol=curr_instruction[1]
-                    if curr_symbol not in symbol_table:
-                        curr_symbol=curr_symbol+":"
-                    curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
-                    output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
-                    output_file.write('\n')
-                else:
-                    output_file.write(curr_opcode_binary+" ")
-                    output_file.write('\n')
-            else:
-                curr_instruction.pop(0)
-                curr_opcode=curr_instruction[0]
+			curr_symbol=curr_instruction[1]
+			if curr_symbol not in symbol_table:
+				if curr_symbol in literal_table:
+					curr_symbol_binary=decimalToBinary(literal_table[curr_symbol])
+					output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+
+				else:
+					curr_symbol=curr_symbol+":"
+					curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
+					output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+				output_file.write('\n')
+			else:
+				curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
+				output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+				output_file.write('\n')
+
+		else:
+			output_file.write(curr_opcode_binary+" ")
+			output_file.write('\n')
+	else:
+		curr_instruction.pop(0)
+		curr_opcode=curr_instruction[0]
 
 
-                # print(curr_opcode)
-                curr_opcode_binary=opcode_table[curr_opcode]
-                if len(curr_instruction)!=1:                #for commands like CLA etc.
+		# print(curr_opcode)
+		curr_opcode_binary=opcode_table[curr_opcode]
+		if len(curr_instruction)!=1:                #for commands like CLA etc.
 
-                    curr_symbol=curr_instruction[1]
-                    if curr_symbol not in symbol_table:
-                        curr_symbol=curr_symbol+":"
-                    curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
-                    output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
-                    output_file.write('\n')
-                else:
-                    output_file.write(curr_opcode_binary+" ")
-                    output_file.write('\n')
+			curr_symbol=curr_instruction[1]
+			if curr_symbol not in symbol_table:
+				if curr_symbol in literal_table:
+					curr_symbol_binary=decimalToBinary(literal_table[curr_symbol])
+					output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+				else:
+					curr_symbol=curr_symbol+":"
+					curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
+					output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+				output_file.write('\n')
+			else:
+				curr_symbol_binary=decimalToBinary(symbol_table[curr_symbol])
+				output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+				output_file.write('\n')
+
+		else:
+			output_file.write(curr_opcode_binary+" ")
+			output_file.write('\n')
 
 
     return
