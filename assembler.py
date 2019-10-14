@@ -1,7 +1,12 @@
 
 
 def decimalToBinary(n):
-	return bin(n).replace("0b","")
+	output=bin(n).replace("0b","")
+	if len(output)<8:
+		missingzeroes=8-len(output)
+		output="0"*missingzeroes+output
+
+	return output
 
 
 #errors are defined below
@@ -83,20 +88,16 @@ def address_to_variable(symbol_table,ilc): #gives address to the variables in th
 			jump += 1
 	return jump
 
-def add_literal(literal_table,instruction):  #instruction parameter here is string
-	temp = instruction.replace(" ","")
-	index = temp.find("=")
-	if index!=-1 and index != len(temp)-1:
-		to_add = "'="
-		i = index+1
-		while(True):
-			# print(temxp[i])
-			if(temp[i].isdigit()):
-				to_add += temp[i]
-				i += 1
-			else:
-				break
-		literal_table[to_add+"'"] = "na"
+def add_literal(literal_table,instruction,line_number,literal_line_table):  #instruction parameter here is list
+	temp = instruction
+
+	index = temp[-1].find("=")
+	if index!=-1:
+		literal_table[temp[-1]] = "na"
+		literal_line_table[temp[-1]] = line_number
+
+	
+	
 	return
 
 def literal_to_address(literal_table,ilc):
@@ -104,13 +105,23 @@ def literal_to_address(literal_table,ilc):
 		literal_table[x] = ilc + 1
 		ilc += 1
 	return
+def literal_errors(literal_table,literal_line_table):
+	list_keys=literal_table.keys()
+	for i in list_keys:
+		for j in i:
+			if j.isalpha():
+				print("Error on line "+ str(literal_line_table[i])+ ": Literal should consist of integers only")
+				exit()
+			if j.isalnum()==False and j!="=" and j!="'":
+				print("Error on line "+ str(literal_line_table[i])+ ": Literal should consist of integers only")
+				exit()
 
 
 
 
 
 
-def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
+def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table,literal_line_table):
 	variables = set() #to see which are variables
 	file = open("sample_input_new.txt","r")
 	# print((file.read()))
@@ -142,6 +153,7 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 	line_number = 0
 	for i in file.readlines():
 		# print(i)
+		line_number += 1
 		if i.find("#") != -1:        #for handling comments
 			continue
 		if i!='\n':
@@ -149,7 +161,7 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 			temp_instruction = i.split()
 			argument_errors(temp_instruction,line_number)
 			# print(temp_instruction)
-			line_number += 1
+			
 			# print(line_number)
 			if len(temp_instruction) >2 :
 				if(temp_instruction[0].find(":") != -1):
@@ -164,7 +176,7 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 
 			add_variable(symbol_table,temp_instruction,instruction_location_counter,opcode_table,variables) #added variables
 
-			add_literal(literal_table,i)
+			add_literal(literal_table,temp_instruction,line_number,literal_line_table)
 			instruction_location_counter+=1
 	# print(instruction_location_counter)
 	instruction_location_counter += 1*address_to_variable(symbol_table,instruction_location_counter)
@@ -175,7 +187,8 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 	file.close()
 	return
 
-def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table):
+def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table,literal_line_table):
+	literal_errors(literal_table,literal_line_table)
 	file=open("sample_input_new.txt","r")
 	output_file=open("output.txt","w")
 	line_number = 0
@@ -201,7 +214,20 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
 				#check for valid opcode
 
 				if len(curr_instruction)!=1:                #for commands like CLA etc.
+					if curr_instruction[-1].isdigit():
+						print(curr_instruction[-1])
+						curr_symbol_binary=decimalToBinary(int(curr_instruction[-1]))
+						print(curr_symbol_binary)
+						output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+						output_file.write('\n')
+					
+						continue
 
+
+
+
+
+					
 					curr_symbol=curr_instruction[1]
 					if curr_symbol not in symbol_table:
 						if curr_symbol in literal_table:
@@ -224,6 +250,14 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
 			else:
 				curr_instruction.pop(0)
 				curr_opcode=curr_instruction[0]
+				if curr_instruction[-1].isdigit():
+						print(curr_instruction[-1])
+						curr_symbol_binary=decimalToBinary(int(curr_instruction[-1]))
+						print(curr_symbol_binary)
+						output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
+						output_file.write('\n')
+					
+						continue
 
 
 				# print(curr_opcode)
@@ -265,10 +299,12 @@ symbol_table = {}
 
 literal_table = {}
 instruction_location_counter = 0
+literal_line_table = {}
 
 
 
-first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
+first_pass(symbol_table,literal_table,instruction_location_counter,opcode_table,literal_line_table)
 print(literal_table)
+# print(literal_line_table)
 print(symbol_table)
-second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table)
+second_pass(symbol_table,literal_table,instruction_location_counter,opcode_table,literal_line_table)
