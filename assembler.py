@@ -62,9 +62,13 @@ def label_exists(instruction):   #checks if instruction line contains symbol or 
 		return False
 	return True
 
-def make_symbol_table(symbol_table,instruction,ilc):  #takes symbol out of instruction line and adds it to symbol table, instruction parameter is a string
+def make_symbol_table(symbol_table,instruction,ilc,line_number):  #takes symbol out of instruction line and adds it to symbol table, instruction parameter is a string
 	temp = instruction.replace(" ","")
 	if(label_exists(instruction)):
+		if instruction[:instruction.find(":")+1] in symbol_table:
+			print("Error on "+ str(line_number)+ ": label already defined. Please use a unique label")
+			exit()
+		
 		symbol_table[instruction[:instruction.find(":")+1]] = ilc
 	return
 
@@ -172,7 +176,7 @@ def first_pass(symbol_table,literal_table,instruction_location_counter,opcode_ta
 				invalid_opcode(temp_instruction[0],opcode_table,line_number)
 
 
-			make_symbol_table(symbol_table,i,instruction_location_counter) #added labels
+			make_symbol_table(symbol_table,i,instruction_location_counter,line_number) #added labels
 
 			add_variable(symbol_table,temp_instruction,instruction_location_counter,opcode_table,variables) #added variables
 
@@ -215,9 +219,9 @@ def second_pass(symbol_table,literal_table,instruction_location_counter,opcode_t
 
 				if len(curr_instruction)!=1:                #for commands like CLA etc.
 					if curr_instruction[-1].isdigit():
-						print(curr_instruction[-1])
+						# print(curr_instruction[-1])
 						curr_symbol_binary=decimalToBinary(int(curr_instruction[-1]))
-						print(curr_symbol_binary)
+						# print(curr_symbol_binary)
 						output_file.write(curr_opcode_binary+" "+curr_symbol_binary+" ")
 						output_file.write('\n')
 					
